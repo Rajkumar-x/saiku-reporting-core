@@ -19,6 +19,7 @@ import java.util.ArrayList;
 
 import org.pentaho.reporting.engine.classic.core.AbstractReportDefinition;
 import org.pentaho.reporting.engine.classic.core.AttributeNames;
+import org.pentaho.reporting.engine.classic.core.ClassicEngineBoot;
 import org.pentaho.reporting.engine.classic.core.MasterReport;
 import org.pentaho.reporting.engine.classic.core.ReportPreProcessor;
 import org.pentaho.reporting.engine.classic.core.cache.CachingDataFactory;
@@ -28,6 +29,7 @@ import org.pentaho.reporting.engine.classic.core.function.StructureFunction;
 import org.pentaho.reporting.engine.classic.core.layout.output.DefaultProcessingContext;
 import org.pentaho.reporting.engine.classic.core.modules.parser.bundle.writer.BundleWriterException;
 import org.pentaho.reporting.engine.classic.core.parameters.ParameterDefinitionEntry;
+import org.pentaho.reporting.engine.classic.core.states.PerformanceMonitorContext;
 import org.pentaho.reporting.engine.classic.core.states.datarow.DefaultFlowController;
 import org.pentaho.reporting.engine.classic.core.util.ReportParameterValues;
 import org.pentaho.reporting.engine.classic.core.wizard.DataSchemaDefinition;
@@ -58,6 +60,9 @@ public class SaikuReportProcessor {
 		
 		SaikuReportPreProcessorUtil.saveReportSpecification(reportTemplate, spec);
 		
+		final PerformanceMonitorContext performanceMonitorContext =
+			      ClassicEngineBoot.getInstance().getObjectFactory().get( PerformanceMonitorContext.class );
+		
 		CachingDataFactory dataFactory = null;
 		try {
 
@@ -83,7 +88,7 @@ public class SaikuReportProcessor {
 
 			//müssen die Parameter definitions nichtmehr hier rein???
 			final DefaultFlowController flowController = new DefaultFlowController
-					(processingContext, reportTemplate.getDataSchemaDefinition(), parameterValues,null);
+					(processingContext, reportTemplate.getDataSchemaDefinition(), parameterValues,performanceMonitorContext);
 
 			ensureSaikuPreProcessorIsAdded(reportTemplate);
 			ensureHasOverrideWizardFormatting(reportTemplate, flowController);
@@ -131,6 +136,7 @@ public class SaikuReportProcessor {
 			if(dataFactory!=null){
 				dataFactory.close();
 			}
+			performanceMonitorContext.close();
 		}
 
 		return reportTemplate;
